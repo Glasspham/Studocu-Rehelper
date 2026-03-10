@@ -45,224 +45,137 @@ document.getElementById('clearBtn').addEventListener('click', async () => {
     }
 });
 
-// Pê đê ép 
+// Print / Save as PDF using Studocu-focused scroll + print flow
 document.getElementById('checkBtn').addEventListener('click', async () => {
+    const checkBtn = document.getElementById('checkBtn');
+    updateStatus("Đang chuẩn bị trang để in/PDF...", true);
+    if (checkBtn) {
+        checkBtn.disabled = true;
+    }
+
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    // Inject viewer styles
-    chrome.scripting.insertCSS({
-        target: { tabId: tab.id },
-        files: ["viewer_styles.css"]
-    });
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: runCleanViewer
-    });
-});
-
-function runCleanViewer() {
-    const pages = document.querySelectorAll('div[data-page-index]');
-    if (pages.length === 0) {
-        alert("⚠️ Không tìm thấy trang nào.\n(Hãy cuộn chuột xuống cuối tài liệu để web tải hết nội dung trước!)");
-        return;
-    }
-
-    if (!confirm(`Tìm thấy ${pages.length} trang.\nBấm OK để xử lý và tạo PDF...`)) return;
-
-    const SCALE_FACTOR = 4;
-    const HEIGHT_SCALE_DIVISOR = 4;
-
-    // Functions
-    function copyComputedStyle(source, target, scaleFactor, shouldScaleHeight = false, shouldScaleWidth = false, heightScaleDivisor = 4, widthScaleDivisor = 4, shouldScaleMargin = false, marginScaleDivisor = 4) {
-        const computedStyle = window.getComputedStyle(source);
-        
-        const normalProps = [
-            'position', 'left', 'top', 'bottom', 'right',
-            'font-family', 'font-weight', 'font-style',
-            'color', 'background-color',
-            'text-align', 'white-space',
-            'display', 'visibility', 'opacity', 'z-index',
-            'text-shadow', 'unicode-bidi', 'font-feature-settings', 'padding'
-        ];
-        
-        const scaleProps = ['font-size', 'line-height'];
-        let styleString = '';
-        
-        normalProps.forEach(prop => {
-            const value = computedStyle.getPropertyValue(prop);
-            if (value && value !== 'none' && value !== 'auto' && value !== 'normal') {
-                styleString += `${prop}: ${value} !important; `;
+        func: () => {
+            if (!location.hostname.includes('studocu')) {
+                alert("Chức năng in/PDF này chỉ hỗ trợ trên Studocu.");
+                return;
             }
-        });
-        
-        const widthValue = computedStyle.getPropertyValue('width');
-        if (widthValue && widthValue !== 'none' && widthValue !== 'auto') {
-            if (shouldScaleWidth) {
-                const numValue = parseFloat(widthValue);
-                if (!isNaN(numValue) && numValue > 0) {
-                    const unit = widthValue.replace(numValue.toString(), '');
-                    styleString += `width: ${numValue / widthScaleDivisor}${unit} !important; `;
-                } else {
-                    styleString += `width: ${widthValue} !important; `;
-                }
-            } else {
-                styleString += `width: ${widthValue} !important; `;
-            }
-        }
-        
-        const heightValue = computedStyle.getPropertyValue('height');
-        if (heightValue && heightValue !== 'none' && heightValue !== 'auto') {
-            if (shouldScaleHeight) {
-                const numValue = parseFloat(heightValue);
-                if (!isNaN(numValue) && numValue > 0) {
-                    const unit = heightValue.replace(numValue.toString(), '');
-                    styleString += `height: ${numValue / heightScaleDivisor}${unit} !important; `;
-                } else {
-                    styleString += `height: ${heightValue} !important; `;
-                }
-            } else {
-                styleString += `height: ${heightValue} !important; `;
-            }
-        }
-        
-        ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'].forEach(prop => {
-            const value = computedStyle.getPropertyValue(prop);
-            if (value && value !== 'auto') {
-                const numValue = parseFloat(value);
-                if (!isNaN(numValue)) {
-                    if (shouldScaleMargin && numValue !== 0) {
-                        const unit = value.replace(numValue.toString(), '');
-                        styleString += `${prop}: ${numValue / marginScaleDivisor}${unit} !important; `;
-                    } else {
-                        styleString += `${prop}: ${value} !important; `;
+
+            const removeAdContent = () => {
+                const removeBySelector = (selector) => {
+                    document.querySelectorAll(selector).forEach(el => el.remove());
+                };
+
+                removeBySelector("#adbox");
+                removeBySelector(".adsbox");
+                removeBySelector(".ad-box");
+                removeBySelector(".banner-ads");
+                removeBySelector(".advert");
+                removeBySelector(".PremiumBannerBlobWrapper_overflow-wrapper__xsaS8");
+
+                document.querySelectorAll("*").forEach(el => {
+                    if (el.style.filter?.includes("blur") || el.className.toString().includes("blur")) {
+                        el.style.filter = "none";
+                        el.classList.remove("blur");
                     }
-                }
+                });
+
+                document.querySelectorAll("div, section, aside").forEach(el => {
+                    const bg = window.getComputedStyle(el).backgroundColor;
+                    if (bg.includes("rgba") && bg.includes("0.5")) {
+                        el.remove();
+                    }
+                });
+            };
+
+            const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+            const scrollPageToBottom = async () => {
+                let totalHeight = 0;
+                const distance = 300;
+
+                return new Promise((resolve) => {
+                    const timer = setInterval(() => {
+                        const scrollHeight = document.body.scrollHeight;
+                        window.scrollBy(0, distance);
+                        totalHeight += distance;
+
+                        if (totalHeight >= scrollHeight - window.innerHeight) {
+                            clearInterval(timer);
+                            resolve();
+                        }
+                    }, 300);
+                });
+            };
+
+            const applyPrintStyles = () => {
+                const style = document.createElement("style");
+                style.id = "print-style-extension";
+                style.innerHTML = `
+          @media print {
+            header, footer, nav, aside, .no-print, .ads, .sidebar,
+            .premium-banner, .ViewerToolbar, .Layout_info-bar-wrapper__He0Ho,
+            .Sidebar_sidebar-scrollable__kqeBZ, .HeaderWrapper_header-wrapper__mCmf3,
+            .Layout_visible-content-bottom-wrapper-sticky__yaaAB,
+            .Layout_bottom-section-wrapper__yBWWk,
+            .Layout_footer-wrapper__bheJQ, .InlineBanner_inline-banner-wrapper__DAi5X,
+            .banner-wrapper, #top-bar-wrapper,
+            .Layout_sidebar-wrapper__unavM,
+            .Layout_is-open__9DQr4 {
+              display: none !important;
             }
-        });
-        
-        scaleProps.forEach(prop => {
-            const value = computedStyle.getPropertyValue(prop);
-            if (value && value !== 'none' && value !== 'auto' && value !== 'normal') {
-                const numValue = parseFloat(value);
-                if (!isNaN(numValue) && numValue !== 0) {
-                    const unit = value.replace(numValue.toString(), '');
-                    styleString += `${prop}: ${numValue / scaleFactor}${unit} !important; `;
-                } else {
-                    styleString += `${prop}: ${value} !important; `;
-                }
+
+            body {
+              background: white !important;
+              color: black !important;
             }
-        });
-        
-        let transformOrigin = computedStyle.getPropertyValue('transform-origin');
-        if (transformOrigin) {
-            styleString += `transform-origin: ${transformOrigin} !important; -webkit-transform-origin: ${transformOrigin} !important; `;
-        }
-        
-        styleString += 'overflow: visible !important; max-width: none !important; max-height: none !important; clip: auto !important; clip-path: none !important; ';
-        target.style.cssText += styleString;
-    }
 
-    function deepCloneWithStyles(element, scaleFactor, heightScaleDivisor, depth = 0) {
-        const clone = element.cloneNode(false);
-        const hasTextClass = element.classList && element.classList.contains('t');
-        const hasUnderscoreClass = element.classList && element.classList.contains('_');
-        
-        const shouldScaleMargin = element.tagName === 'SPAN' && 
-                                   element.classList && 
-                                   element.classList.contains('_') &&
-                                   Array.from(element.classList).some(cls => /^_(?:\d+[a-z]*|[a-z]+\d*)$/i.test(cls));
-        
-        copyComputedStyle(element, clone, scaleFactor, hasTextClass, hasUnderscoreClass, heightScaleDivisor, 4, shouldScaleMargin, scaleFactor);
-        
-        if (element.classList && element.classList.contains('pc')) {
-            clone.style.setProperty('transform', 'none', 'important');
-            clone.style.setProperty('-webkit-transform', 'none', 'important');
-            clone.style.setProperty('overflow', 'visible', 'important');
-            clone.style.setProperty('max-width', 'none', 'important');
-            clone.style.setProperty('max-height', 'none', 'important');
-        }
-        
-        if (element.childNodes.length === 1 && element.childNodes[0].nodeType === 3) {
-            clone.textContent = element.textContent;
-        } else {
-            element.childNodes.forEach(child => {
-                if (child.nodeType === 1) {
-                    clone.appendChild(deepCloneWithStyles(child, scaleFactor, heightScaleDivisor, depth + 1));
-                } else if (child.nodeType === 3) {
-                    clone.appendChild(child.cloneNode(true));
-                }
-            });
-        }
-        return clone;
-    }
-
-    // Build
-    const viewerContainer = document.createElement('div');
-    viewerContainer.id = 'clean-viewer-container';
-
-    let successCount = 0;
-    
-    pages.forEach((page, index) => {
-        const pc = page.querySelector('.pc');
-        let width = 595.3; //Fallback A4
-        let height = 841.9;
-
-        if (pc) {
-            const pcStyle = window.getComputedStyle(pc);
-            const pcWidth = parseFloat(pcStyle.width);
-            const pcHeight = parseFloat(pcStyle.height);
-            
-            if (!isNaN(pcWidth) && pcWidth > 0 && !isNaN(pcHeight) && pcHeight > 0) {
-                width = pcWidth;
-                height = pcHeight;
-            } else {
-                const rect = pc.getBoundingClientRect();
-                if (rect.width > 10 && rect.height > 10) {
-                    width = rect.width;
-                    height = rect.height;
-                }
+            * {
+              box-shadow: none !important;
+              background: transparent !important;
             }
-        }
-        
-        const newPage = document.createElement('div');
-        newPage.className = 'std-page';
-        newPage.id = `page-${index + 1}`;
-        newPage.setAttribute('data-page-number', index + 1);
-        
-        newPage.style.width = width + 'px';
-        newPage.style.height = height + 'px';
 
-        // Layer ảnh
-        const originalImg = page.querySelector('img.bi') || page.querySelector('img');
-        if (originalImg) {
-            const bgLayer = document.createElement('div');
-            bgLayer.className = 'layer-bg';
-            const imgClone = originalImg.cloneNode(true);
-            imgClone.style.cssText = 'width: 100%; height: 100%; object-fit: cover; object-position: top center';
-            bgLayer.appendChild(imgClone);
-            newPage.appendChild(bgLayer);
-        }
+            .Viewer_document-wrapper__JPBWQ,
+            .Viewer_document-wrapper__LXzoQ,
+            .Viewer_document-wrapper__XsO4j,
+            .page-content {
+              display: flex !important;
+            }
+          }
+        `;
+                document.head.appendChild(style);
+            };
 
-        // Layer Text
-        const originalPc = page.querySelector('.pc');
-        if (originalPc) {
-            const textLayer = document.createElement('div');
-            textLayer.className = 'layer-text';
-            const pcClone = deepCloneWithStyles(originalPc, SCALE_FACTOR, HEIGHT_SCALE_DIVISOR);
-            
-            pcClone.querySelectorAll('img').forEach(img => img.style.display = 'none');
-            textLayer.appendChild(pcClone);
-            newPage.appendChild(textLayer);
-        }
+            const scrollDownAndPrint = async () => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                await delay(500);
 
-        viewerContainer.appendChild(newPage);
-        successCount++;
+                await scrollPageToBottom();
+
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                await delay(1000);
+
+                applyPrintStyles();
+
+                window.print();
+
+                window.onafterprint = () => {
+                    document.getElementById("print-style-extension")?.remove();
+                };
+            };
+
+            removeAdContent();
+            scrollDownAndPrint();
+        }
     });
 
-    document.body.appendChild(viewerContainer);
-    
     setTimeout(() => {
-        window.print();
-    }, 1000);
+        if (checkBtn) {
+            checkBtn.disabled = false;
+        }
+        updateStatus("Sẵn sàng hoạt động", false);
+    }, 5000);
 }
+);
