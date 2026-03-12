@@ -1,4 +1,6 @@
-#  Studocu Helper | [`EN`](./README.en.md)
+#  Studocu Rehelper | [`EN`](./README.en.md)
+
+>**Đây là tiện ích được làm lại từ tác giả gốc [Studocu-helper](https://github.com/xDatx/Studocu-Helper).**
 
 Một tiện ích mở rộng nhẹ dành cho trình duyệt, giúp tối ưu hóa trải nghiệm đọc và lưu trữ tài liệu trên Studocu.
 
@@ -40,12 +42,6 @@ dụng
 3. Cuộn chuột xuống cuối trang để đảm bảo toàn bộ nội dung đã được tải.
 4. Mở Extension và nhấn nút **"Tạo File PDF"**.
 5. Chờ vài giây để tool xử lý, sau đó hộp thoại lưu PDF sẽ tự động hiện ra.
-
----
-
-Video Testing:
-
-https://github.com/user-attachments/assets/0f98de3a-cdbb-464d-8209-b9953b0721ee
 
 ## ⚠️ Lưu ý (Disclaimer)
 Công cụ này được tạo ra với mục đích hỗ trợ học tập và nghiên cứu cá nhân. Vui lòng sử dụng có trách nhiệm và tôn trọng bản quyền của tài liệu gốc.

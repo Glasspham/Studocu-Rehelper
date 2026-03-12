@@ -1,5 +1,7 @@
 ## Studocu Helper
 
+>**This is a remake of original repo from [Studocu-helper](https://github.com/xDatx/Studocu-Helper).>**
+
 A lightweight browser extension that optimizes the reading and archiving experience for documents on Studocu.
 
 > **Status:** v2.0

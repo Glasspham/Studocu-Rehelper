@@ -26,27 +26,31 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 14px 16px;
   background: rgba(15, 23, 42, 0.9);
   border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  position: relative;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
   color: var(--primary-color);
 }
 
-.logo h1 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -0.5px;
-  color: var(--text-main);
+.wordmark {
+  width: 140px;
+  height: 34px;
+  object-fit: cover;
+  object-position: left center;
+  opacity: 0.95;
+  display: block;
 }
 
 .version {
+  position: absolute;
+  top: 10px;
+  right: 12px;
   font-size: 10px;
   background: rgba(51, 65, 85, 0.9);
   padding: 2px 6px;
