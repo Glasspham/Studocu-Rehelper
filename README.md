@@ -8,8 +8,6 @@
 
 Một tiện ích mở rộng nhẹ dành cho trình duyệt, giúp tối ưu hóa trải nghiệm đọc và lưu trữ tài liệu trên Studocu.
 
-> **Trạng thái:** v2.0
-
 ## 📖 Giới thiệu
 
 Công cụ này được phát triển để giải quyết các vấn đề hiển thị gây cản trở khi xem tài liệu học tập. Thay vì phải thao tác thủ công phức tạp, extension cung cấp giải pháp "một click" để làm sạch giao diện và xuất tài liệu ra định dạng in ấn chuẩn.
@@ -49,3 +47,4 @@ dụng
 
 ## ⚠️ Lưu ý (Disclaimer)
 Công cụ này được tạo ra với mục đích hỗ trợ học tập và nghiên cứu cá nhân. Vui lòng sử dụng có trách nhiệm và tôn trọng bản quyền của tài liệu gốc.
+
