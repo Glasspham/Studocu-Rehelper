@@ -8,7 +8,6 @@
 
 A lightweight browser extension that optimizes the reading and archiving experience for documents on Studocu.
 
-> **Status:** v2.0
 
 ### Introduction
 
