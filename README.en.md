@@ -50,10 +50,6 @@ Because this is a personal development tool (not yet on the web store), you need
 
 ---
 
-### Demo Video
-
-GitHub attachment:
-`https://github.com/user-attachments/assets/0f98de3a-cdbb-464d-8209-b9953b0721ee`
 
 ### ⚠️ Disclaimer
 
