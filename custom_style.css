@@ -9,7 +9,9 @@ html, body {
 [class*="paywall"],
 [class*="overlay"],
 #page-container-wrapper + div,
-.advertisement {
+.advertisement,
+.AIToolbar_ai-toolbar-wrapper__spApq,
+[class*="AIToolbar"] {
     display: none !important;
     z-index: -9999 !important;
 }

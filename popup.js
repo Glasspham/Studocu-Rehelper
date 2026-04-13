@@ -32,11 +32,24 @@ document.getElementById('clearBtn').addEventListener('click', async () => {
                 count++;
             }
         }
-        updateStatus(`Đã xóa ${count} cookies! Đang tải lại...`, false);
+        updateStatus(`Đã xóa ${count} cookies! Đang xóa AI Toolbar...`, false);
+        
+        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+        
+        // Xóa AIToolbar trước khi reload
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: () => {
+                document.querySelectorAll("[class*='AIToolbar']").forEach(el => el.remove());
+            }
+        });
         
         setTimeout(() => {
             chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-                if(tabs[0]) chrome.tabs.reload(tabs[0].id);
+                if(tabs[0]) {
+                    updateStatus("Xóa xong! Tải lại trang...", false);
+                    chrome.tabs.reload(tabs[0].id);
+                }
             });
         }, 1000);
         
